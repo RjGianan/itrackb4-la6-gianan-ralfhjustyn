@@ -12,5 +12,5 @@ Route::get('/whoami', function () {
 });
 
 Route::get('/movies/filter/{genre?}', [MovieController::class, 'filter'])->name('movies.filter');
-Route::resource('movies', MovieController::class)->only(['index', 'show']);
+Route::resource('movies', MovieController::class)->only(['index', 'show', 'create', 'store']);
 

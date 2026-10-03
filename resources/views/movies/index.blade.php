@@ -4,6 +4,10 @@
 
 @section('content')
 
+    @if (session('success'))
+        <div class="alert alert-success" role="status">{{ session('success') }}</div>
+    @endif
+
     @if ($movies === 'all')
         <P>Showing all movies</P>
     @endif
@@ -37,6 +41,7 @@
             <th>Genre</th>
             <th>Rating</th>
             <th>Year</th>
+            <th>Now Showing</th>
         </tr>
 
         @forelse ($movies as $movie)
@@ -51,11 +56,19 @@
                     @endif
                 </td>
                 <td>{{ $movie['year'] }}</td>
+                <td>
+                    @if ($movie['is_nowshowing'] ?? false)
+                        <span class="badge text-bg-success">Yes</span>
+                    @else
+                        <span class="badge text-bg-secondary">No</span>
+                    @endif
+                </td>
             </tr>
         @empty
             <tr>
-                <td colspan="5" class="text-center">There are no movies to display right now.</td>
+                <td colspan="6" class="text-center">There are no movies to display right now.</td>
             </tr>
         @endforelse
+
     </table>
 @endsection

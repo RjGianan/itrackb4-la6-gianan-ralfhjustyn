@@ -16,6 +16,7 @@ class MovieController extends Controller
         $year = $request->query('year', 'all');
 
         $all = $this->movies();
+        $movies = [];
 
             foreach ($all as $movie) {
                 $MacthGenre = $activeGenre === 'all' || $movie['genre'] === $activeGenre;
@@ -35,7 +36,7 @@ class MovieController extends Controller
      */
     public function create()
     {
-        //
+        return view('movies.create');
     }
 
     /**
@@ -43,7 +44,29 @@ class MovieController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validated = $request->validate([
+            'title' => 'required|string|max:100',
+            'genre' => 'required|string|max:100',
+            'rating' => 'required|numeric|Min:0|max:10',
+            'year' => 'required|integer|min:2000|max:2026',
+            'is_nowshowing' => 'required|boolean',
+        ]);
+
+        $movies = $this->movies();
+        $id = count($movies) + 1;
+
+        $movies[$id] = [
+            'id' => $id,
+            'title' => $validated['title'],
+            'genre' => $validated['genre'],
+            'rating' => $validated['rating'],
+            'year' => $validated['year'],
+            'is_nowshowing' => (bool) $validated['is_nowshowing'],
+        ];
+
+        $this->saveMovies($movies);
+
+        return redirect()->route('movies.index')->with('success', 'Movie added successfully.');
     }
 
     /**
@@ -105,18 +128,17 @@ class MovieController extends Controller
 
      private function Movies()
     {
-        return [
-            1 => ['id' => 1, 'title' => 'Your Name', 'genre' => 'Animation', 'rating' => 8.8, 'year' => 2016],
-            2 => ['id' => 2, 'title' => 'I Want To Eat Your Pancreas', 'genre' => 'Drama', 'rating' => 8.1, 'year' => 2018],
-            3 => ['id' => 3, 'title' => 'How to Train Your Dragon 3', 'genre' => 'Fantasy', 'rating' => 8.1, 'year' => 2019],
-            4 => ['id' => 4, 'title' => 'Avengers: Endgame', 'genre' => 'Action', 'rating' => 8.4, 'year' => 2019],
-            5 => ['id' => 5, 'title' => 'Haikyuu!! The Movie', 'genre' => 'Sports', 'rating' => 8.6, 'year' => 2016],
-            6 => ['id' => 6, 'title' => 'A Silent Voice', 'genre' => 'Animation', 'rating' => 8.5, 'year' => 2016],
-            7 => ['id' => 7, 'title' => 'Demon Slayer: Mugen Train', 'genre' => 'Action', 'rating' => 8.7, 'year' => 2020],
-            8 => ['id' => 8, 'title' => 'Jujutsu Kaisen 0', 'genre' => 'Action', 'rating' => 7.8, 'year' => 2021],
-            9 => ['id' => 9, 'title' => 'Spy x Family', 'genre' => 'Action', 'rating' => 7.5, 'year' => 2021],
-            10 => ['id' => 10, 'title' => 'Anohana: The Flower We Saw That Day', 'genre' => 'Drama', 'rating' => 8.1, 'year' => 2011],
-        ];
+       $path = storage_path('app/Movies.json');
+
+       return json_decode(file_get_contents($path), true);
+    }
+
+    private function saveMovies($movies): void
+    {
+        file_put_contents(
+            storage_path('app/Movies.json'),
+            json_encode($movies, JSON_PRETTY_PRINT)
+        );
     }
 
 }
