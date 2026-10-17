@@ -3,32 +3,18 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\Movie;
 
 class MovieController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request)
+    public function index()
     {
+        $movies = Movie::all();
 
-        $activeGenre = $request->query('activeGenre', 'all');
-        $year = $request->query('year', 'all');
-
-        $all = $this->movies();
-        $movies = [];
-
-            foreach ($all as $movie) {
-                $MacthGenre = $activeGenre === 'all' || $movie['genre'] === $activeGenre;
-                $MacthYear = $year === 'all' || (int)$movie['year'] === (int)$year;
-
-                if ($MacthGenre && $MacthYear) {
-                    $movies[] = $movie;
-                }
-            }
-
-        return view('movies.index', ['movies' => $movies, 'activeGenre' => $activeGenre, 'year' => $year]);
-
+        return view('movies.index', compact('movies'));
     }
 
     /**
@@ -52,19 +38,7 @@ class MovieController extends Controller
             'is_nowshowing' => 'required|boolean',
         ]);
 
-        $movies = $this->movies();
-        $id = count($movies) + 1;
-
-        $movies[$id] = [
-            'id' => $id,
-            'title' => $validated['title'],
-            'genre' => $validated['genre'],
-            'rating' => $validated['rating'],
-            'year' => $validated['year'],
-            'is_nowshowing' => (bool) $validated['is_nowshowing'],
-        ];
-
-        $this->saveMovies($movies);
+        Movie::create($validated);
 
         return redirect()->route('movies.index')->with('success', 'Movie added successfully.');
     }
@@ -72,17 +46,11 @@ class MovieController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show($id)
     {
-          $movies = $this->movies();
-        
-        if (!isset($movies[$id])) {
-            abort(404);
-        }
+        $movies= Movie::findOrFail($id);
 
-        $movie = $movies[$id];
-        return view('movies.show', ['movie' => $movie]);
-
+        return view('movies.show', compact('movies'));
     }
 
     /**
@@ -109,36 +77,16 @@ class MovieController extends Controller
         //
     }
 
-     public function filter($genre = null)
+    public function filter(?string $genre = null)
     {
-        $movies = $this->movies();
+        $query = Movie::query();
 
         if ($genre !== null) {
-            $filtered = [];
-            foreach ($movies as $movie) {
-                if ($movie['genre'] === $genre) {
-                    $filtered[$movie['id']] = $movie;
-                }
-            }
-            $movies = $filtered;
+            $query->where('genre', $genre);
         }
+
+        $movies = $query->get();
 
         return view('movies.filter', ['movies' => $movies, 'activeGenre' => $genre]);
     }
-
-     private function Movies()
-    {
-       $path = storage_path('app/Movies.json');
-
-       return json_decode(file_get_contents($path), true);
-    }
-
-    private function saveMovies($movies): void
-    {
-        file_put_contents(
-            storage_path('app/Movies.json'),
-            json_encode($movies, JSON_PRETTY_PRINT)
-        );
-    }
-
 }

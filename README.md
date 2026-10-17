@@ -1,14 +1,13 @@
 # Question
 
-# Q1. Your form sends data with POST rather than GET. Explain what would go wrong if it used GET instead. Your answer should say something about what a browser does when a page is refreshed.
+# Which column did you make nullable, and why that one and not another?
 
-A. We use POST because it sends the form data to the server without putting it in the URL. If we used GET, the data would show in the address bar. Also, when we refresh the page, the browser might send the request again and add the same movie twice.
+In my migration, I made rating and year nullable because that information might not always be available when a movie is entered. I kept title and genre required because they identify and describe the movie. is_nowshowing has a default value, so it doesn’t need to be nullable.
 
-# Q2. When validation fails, your controller does not run the code that saves the record — and you did not write an if statement to stop it. Explain what actually stops it, and where the visitor ends up.
+# Which step failed first for you, and what did the error say?
 
-A. Laravel checks the form data when it reaches $request->validate(...). If something is invalid, Laravel stops the controller there and redirects us back to the form. It also sends the error messages and the values we already entered back to the page.
+The first error I encountered was when I ran php artisan db:show --counts. It said the intl PHP extension was required. Laravel needed it to format the table output. Later, when I tested the movies page, I also got “View [Movie.index] not found” because the view path used uppercase Movie, but the actual folder was lowercase movies.
 
+# You changed no Blade file in Part D, yet your pages still work. Why not?
 
-# Q3. Your success message is displayed from the layout, which renders on every page. Explain why it does not appear on every page.
-
-A. The success message doesn’t show on every page because the movie list checks for it before displaying it. The message is temporary Aaand only appears after a movie is added successfully and the app redirects to the movie list.
+I did make Blade changes in this work, so it wouldn’t be accurate to say I changed none. The list page already had a loop to display movies, but the controller and view needed to agree on the variable name. I also updated the detail view to use the variable passed by the show() method.
