@@ -2,19 +2,35 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Models\Genre;
 use App\Models\Movie;
+use Illuminate\Http\Request;
 
 class MovieController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $movies = Movie::all();
+        $genres = Genre::orderBy('name')->get();
 
-        return view('movies.index', compact('movies'));
+        $genreId = $request->query('genre_id');
+        $year = $request->query('year');
+
+        $query = Movie::with('genre');
+
+        if ($genreId !== null && $genreId !== '') {
+            $query = $query->where('genre_id', $genreId);
+        }
+
+        if ($year !== null && $year !== '') {
+            $query = $query->where('year', $year);
+        }
+        $movies = $query->get();
+        $movies = $query->get();
+
+        return view('movies.index', compact('movies', 'genres'));
     }
 
     /**
@@ -22,7 +38,9 @@ class MovieController extends Controller
      */
     public function create()
     {
-        return view('movies.create');
+        $genres = Genre::orderBy('name')->get();
+
+        return view('movies.create', compact('genres'));
     }
 
     /**
@@ -32,8 +50,8 @@ class MovieController extends Controller
     {
         $validated = $request->validate([
             'title' => 'required|string|max:100',
-            'genre' => 'required|string|max:100',
-            'rating' => 'required|numeric|Min:0|max:10',
+            'genre_id' => 'required|integer|exists:genres,id',
+            'rating' => 'required|numeric|min:0|max:10',
             'year' => 'required|integer|min:2000|max:2026',
             'is_nowshowing' => 'required|boolean',
         ]);
@@ -48,7 +66,7 @@ class MovieController extends Controller
      */
     public function show($id)
     {
-        $movies= Movie::findOrFail($id);
+        $movies = Movie::with('genre')->findOrFail($id);
 
         return view('movies.show', compact('movies'));
     }
@@ -79,10 +97,12 @@ class MovieController extends Controller
 
     public function filter(?string $genre = null)
     {
-        $query = Movie::query();
+        $query = Movie::with('genre');
 
         if ($genre !== null) {
-            $query->where('genre', $genre);
+            $query->whereHas('genre', function ($query) use ($genre) {
+                $query->where('name', $genre);
+            });
         }
 
         $movies = $query->get();

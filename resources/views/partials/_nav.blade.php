@@ -1,4 +1,5 @@
-<nav class="nav">
-    <a class="nav-link d-inline-block text-white ps-0" href="{{ route('movies.index') }}">Movie List</a>
-    <a class="nav-link d-inline-block text-white" href="{{ route('movies.filter') }}">Filter Movies</a>
+<nav class="nav archive-nav gap-1">
+    <a class="nav-link text-white {{ request()->routeIs('movies.index') ? 'active' : '' }}" href="{{ route('movies.index') }}">All Movies</a>
+    <a class="nav-link text-white {{ request()->routeIs('movies.filter') ? 'active' : '' }}" href="{{ route('movies.filter') }}">Browse by Genre</a>
+    <a class="nav-link text-white" href="{{ route('movies.create') }}">Add Movie</a>
 </nav>
