@@ -31,6 +31,105 @@ class MovieDatabaseTest extends TestCase
         ]);
     }
 
+    public function test_unknown_page_shows_custom_not_found_page(): void
+    {
+        $this->get('/missing-page')
+            ->assertNotFound()
+            ->assertSee('Page not found')
+            ->assertSee(route('movies.index'), false);
+    }
+
+    public function test_server_error_shows_custom_page_when_debug_is_disabled(): void
+    {
+        config(['app.debug' => false]);
+
+        \Illuminate\Support\Facades\Route::get('/test-server-error', static function () {
+            throw new \RuntimeException('Expected test exception');
+        });
+
+        $this->get('/test-server-error')
+            ->assertInternalServerError()
+            ->assertSee('Something went wrong')
+            ->assertSee(route('movies.index'), false);
+    }
+
+    public function test_movie_update_changes_the_existing_movie_without_adding_another(): void
+    {
+        $genre = Genre::create(['name' => 'Drama']);
+        $movie = Movie::create([
+            'title' => 'Original Movie',
+            'genre_id' => $genre->id,
+            'rating' => 7.5,
+            'year' => 2020,
+            'is_nowshowing' => false,
+        ]);
+
+        $this->get(route('movies.edit', $movie))
+            ->assertOk()
+            ->assertSee('Edit Movie')
+            ->assertSee(route('movies.update', $movie), false);
+
+        $response = $this->put(route('movies.update', $movie), [
+            'title' => 'Updated Movie',
+            'genre_id' => $genre->id,
+            'rating' => 8.2,
+            'year' => 2021,
+            'is_nowshowing' => '1',
+        ]);
+
+        $response->assertRedirect(route('movies.index'));
+        $this->assertDatabaseCount('movies', 1);
+        $this->assertDatabaseHas('movies', [
+            'id' => $movie->id,
+            'title' => 'Updated Movie',
+            'rating' => 8.2,
+            'year' => 2021,
+            'is_nowshowing' => true,
+        ]);
+    }
+
+    public function test_movie_cannot_be_deleted_when_it_is_the_last_in_its_genre(): void
+    {
+        $genre = Genre::create(['name' => 'Drama']);
+        $movie = Movie::create([
+            'title' => 'Only Drama Movie',
+            'genre_id' => $genre->id,
+            'rating' => 7.5,
+            'year' => 2020,
+            'is_nowshowing' => false,
+        ]);
+
+        $this->delete(route('movies.destroy', $movie))
+            ->assertForbidden();
+
+        $this->assertDatabaseHas('movies', ['id' => $movie->id]);
+    }
+
+    public function test_movie_can_be_deleted_when_its_genre_has_other_movies(): void
+    {
+        $genre = Genre::create(['name' => 'Drama']);
+        $movieToDelete = Movie::create([
+            'title' => 'First Drama Movie',
+            'genre_id' => $genre->id,
+            'rating' => 7.5,
+            'year' => 2020,
+            'is_nowshowing' => false,
+        ]);
+        $remainingMovie = Movie::create([
+            'title' => 'Second Drama Movie',
+            'genre_id' => $genre->id,
+            'rating' => 8,
+            'year' => 2021,
+            'is_nowshowing' => true,
+        ]);
+
+        $this->delete(route('movies.destroy', $movieToDelete))
+            ->assertRedirect(route('movies.index'));
+
+        $this->assertDatabaseMissing('movies', ['id' => $movieToDelete->id]);
+        $this->assertDatabaseHas('movies', ['id' => $remainingMovie->id]);
+    }
+
     public function test_missing_genre_returns_to_form_with_other_values_preserved(): void
     {
         $genre = Genre::create(['name' => 'Drama']);
