@@ -18,23 +18,8 @@
             background: #f4f6f8 !important;
         }
 
-        .archive-header {
-            background: var(--archive-ink);
-        }
-
-        .archive-header .container,
         .archive-main {
             max-width: 1120px;
-        }
-
-        .archive-nav .nav-link {
-            padding: .4rem .75rem;
-            border-radius: .3rem;
-        }
-
-        .archive-nav .nav-link:hover,
-        .archive-nav .nav-link.active {
-            background: var(--archive-blue);
         }
 
         .archive-main {
@@ -96,16 +81,16 @@
     </style>
 </head>
 <body class="bg-light">
-    <header class="archive-header text-white py-3 mb-3">
+    <header class="mb-3">
+        @include('partials._nav')
         <div class="container">
-            <h1 class="h4 fw-bold mb-2">My Movie List</h1>
-            @include('partials._nav')
-            <p class="archive-byline small mb-0 mt-2">Prepared by: Ralfh Justyn V. Gianan</p>
+            <p class="archive-byline small mb-0">Prepared by: Ralfh Justyn V. Gianan</p>
         </div>
     </header>
 
     <main class="container archive-main">
         @yield('content')
     </main>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

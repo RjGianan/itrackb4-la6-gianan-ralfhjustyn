@@ -2,14 +2,9 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MovieController;
+use App\Http\Controllers\HomeController;
 
-Route::get('/', function () {
-    return view('welcome');
-});
 
-Route::get('/whoami', function () {
-    return 'Ralfh Justyn V. Gianan | 2023-70756 | Block 4C | ITRACKB4 Laravel 12';
-});
+Route::get('/', [HomeController::class, 'index'])->name('home');
 
 Route::resource('movies', MovieController::class);
-

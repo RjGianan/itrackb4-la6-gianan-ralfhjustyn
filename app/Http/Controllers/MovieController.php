@@ -14,12 +14,23 @@ class MovieController extends Controller
      */
     public function index(Request $request)
     {
-        $genress = Genre::orderBy('name')->get();
+        $genres = Genre::orderBy('name')->get();
 
+        $search = $request->query('search');
         $genreId = $request->query('genre_id');
         $year = $request->query('year');
+        $isNowShowing = $request->query('is_nowshowing');
+        $sortBy = $request->query('sort', 'title');
+
+        if (! in_array($sortBy, ['title', 'year'], true)) {
+            $sortBy = 'title';
+        }
 
         $query = Movie::with('genre');
+
+        if ($search !== null && $search !== '') {
+            $query = $query->where('title', 'like', "%{$search}%");
+        }
 
         if ($genreId !== null && $genreId !== '') {
             $query = $query->where('genre_id', $genreId);
@@ -28,9 +39,14 @@ class MovieController extends Controller
         if ($year !== null && $year !== '') {
             $query = $query->where('year', $year);
         }
-        $movies = $query->get();
 
-        return view('movies.index', compact('movies', 'genres'));
+        if ($isNowShowing !== null && $isNowShowing !== '') {
+            $query = $query->where('is_nowshowing', $isNowShowing);
+        }
+
+        $movies = $query->orderBy($sortBy)->paginate(7)->withQueryString();
+
+        return view('movies.index', compact('movies', 'genres', 'sortBy'));
     }
 
     /**

@@ -32,3 +32,20 @@ My log entry can tell me which movie ID was saved, even next month when I’m ch
 
 A 403 is better when the action isn’t allowed, like deleting the only movie in a genre. Redirecting back with a message is better when the user can correct something and try again.
 
+## LESSON 13. README.
+## Search, Sort, and Pagination
+
+## Question.
+
+## Your HomeController is not a resource controller. Name two things an index() on a resource controller does that yours does not have to.
+
+My `HomeController@index` only counts movies and genres and passes those totals to the home page. The movie list's `index()` retrieves movie records and handles list features like filtering and pagination, which the home page does not need.
+
+## Your pagination links lost the search term until you added one method. Say what those links contained before, and what the controller therefore received.
+
+Before `withQueryString()`, the page links contained the page number, such as `page=2`, but not the search term or filters. The controller received no search term and showed the full list again.
+
+## A misspelled sort value does not break your page. Explain why that is worse than an error, and what your allowed list does about it.
+
+A misspelled sort value can fail silently, so the page looks normal even though the results are not sorted the way I expected. My allowed list accepts only `title` or `year` and uses `title` when the value is invalid.
+

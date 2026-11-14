@@ -17,40 +17,51 @@
             <a class="btn btn-primary btn-sm" href="{{ route('movies.create') }}">Add a movie</a>
         </div>
 
-        <div class="filter-summary small p-2 mb-3">
-            <strong>Active filters:</strong>
-            Genre: {{ $genres->firstWhere('id', request()->query('genre_id'))?->name ?? 'All genres' }}
-            <span class="mx-1">|</span>
-            Year: {{ request()->query('year') ?: 'All years' }}
-        </div>
-
-        <div class="mb-3">
-            <h3 class="h6 mb-2">Filter by genre</h3>
-            <div class="d-flex flex-wrap gap-2">
-                <a class="btn btn-sm filter-chip {{ request()->query('genre_id') ? '' : 'active' }}"
-                   href="{{ route('movies.index', request()->only('year')) }}">All genres</a>
-                @foreach ($genres as $genre)
-                    <a class="btn btn-sm filter-chip {{ (string) request()->query('genre_id') === (string) $genre->id ? 'active' : '' }}"
-                       href="{{ route('movies.index', array_merge(request()->only('year'), ['genre_id' => $genre->id])) }}">{{ $genre->name }}</a>
-                @endforeach
+        <form method="GET" action="{{ route('movies.index') }}" class="row g-2 align-items-end mb-3">
+            <div class="col-md-3">
+                <label for="movie-search" class="form-label">Search titles</label>
+                <input type="text" id="movie-search" name="search" class="form-control" value="{{ request('search') }}">
             </div>
-        </div>
-
-        <div class="mb-3">
-            <h3 class="h6 mb-2">Filter by year</h3>
-            <div class="d-flex flex-wrap gap-2">
-                <a class="btn btn-sm filter-chip {{ request()->query('year') ? '' : 'active' }}"
-                   href="{{ route('movies.index', request()->only('genre_id')) }}">All years</a>
-                @foreach ([2011, 2016, 2018, 2019, 2020, 2021] as $year)
-                    <a class="btn btn-sm filter-chip {{ (string) request()->query('year') === (string) $year ? 'active' : '' }}"
-                       href="{{ route('movies.index', array_merge(request()->only('genre_id'), ['year' => $year])) }}">{{ $year }}</a>
-                @endforeach
+            <div class="col-md-2">
+                <label for="genre-filter" class="form-label">Genre</label>
+                <select id="genre-filter" name="genre_id" class="form-select">
+                    <option value="">All genres</option>
+                    @foreach ($genres as $genre)
+                        <option value="{{ $genre->id }}" @selected(request('genre_id') == $genre->id)>{{ $genre->name }}</option>
+                    @endforeach
+                </select>
             </div>
-        </div>
-
-        @if (request()->query('genre_id') || request()->query('year'))
-            <p class="mb-3"><a href="{{ route('movies.index') }}">Clear both filters</a></p>
-        @endif
+            <div class="col-md-2">
+                <label for="showing-filter" class="form-label">Now showing</label>
+                <select id="showing-filter" name="is_nowshowing" class="form-select">
+                    <option value="" @selected(request('is_nowshowing') === null || request('is_nowshowing') === '')>Any</option>
+                    <option value="1" @selected(request('is_nowshowing') === '1')>Yes</option>
+                    <option value="0" @selected(request('is_nowshowing') === '0')>No</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label for="year-filter" class="form-label">Year</label>
+                <select id="year-filter" name="year" class="form-select">
+                    <option value="">Any year</option>
+                    @foreach ([2011, 2016, 2018, 2019, 2020, 2021] as $year)
+                        <option value="{{ $year }}" @selected(request('year') == $year)>{{ $year }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label for="sort-filter" class="form-label">Sort by</label>
+                <select id="sort-filter" name="sort" class="form-select">
+                    <option value="title" @selected($sortBy === 'title')>Title</option>
+                    <option value="year" @selected($sortBy === 'year')>Year</option>
+                </select>
+            </div>
+            <div class="col-md-1 d-flex gap-2">
+                <button type="submit" class="btn btn-primary">Apply</button>
+            </div>
+            <div class="col-12">
+                <a href="{{ route('movies.index') }}">Clear filters</a>
+            </div>
+        </form>
 
         <div class="table-responsive">
             <table class="table table-striped table-bordered align-middle archive-table mb-0">
@@ -68,7 +79,7 @@
                 <tbody>
                     @forelse ($movies as $movie)
                         <tr>
-                            <td>{{ $loop->iteration }}</td>
+                            <td>{{ $movies->firstItem() + $loop->index }}</td>
                             <td><a href="{{ route('movies.show', $movie['id']) }}">{{ $movie['title'] }}</a></td>
                             <td>{{ $movie->genre->name }}</td>
                             <td>
@@ -106,5 +117,6 @@
                 </tbody>
             </table>
         </div>
+        {{ $movies->links() }}
     </section>
 @endsection
