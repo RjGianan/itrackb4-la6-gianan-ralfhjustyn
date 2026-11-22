@@ -49,3 +49,27 @@ Before `withQueryString()`, the page links contained the page number, such as `p
 
 A misspelled sort value can fail silently, so the page looks normal even though the results are not sorted the way I expected. My allowed list accepts only `title` or `year` and uses `title` when the value is invalid.
 
+## Authentication and authorisation are not the same. In one sentence each: what did this lesson give you, and what is still missing next meeting?
+
+This lesson taught me that authentication verifies who a user is, while authorization determines what that user is allowed to do. I still need to learn how to define and enforce more detailed permissions, such as roles or policies.
+
+## Why does a successful login call `session()->regenerate()`? What goes wrong if you skip it?
+
+It replaces the session ID after authentication, helping prevent session fixation, where an attacker might try to reuse a session ID they already know. Skipping it leaves the old ID in use.
+
+## Why does a failed login use the same message for a wrong password and an unknown email?
+
+It avoids revealing whether an email address has an account, which could help someone enumerate users.
+
+## Why do `index` and `show` stay public while `create`/`edit`/`update`/`destroy` use `auth`?
+
+Guests can browse the movie list and details, while `create`, `edit`, `update`, and `destroy` change data and therefore require authentication.
+
+## You hid Add (and actions) for guests. Why is that not enough to secure those actions? What actually stops a stranger?
+
+Hiding Add, Edit, or Delete only changes the interface; server-side `auth` middleware on those routes is what blocks unauthenticated requests.
+
+## In screenshot 20 the route name was wrong. Why does auth middleware care that the route is named exactly `login`?
+
+Laravel's authentication middleware redirects unauthenticated users to the route named `login`; if that name is missing or different, the redirect can fail.
+
