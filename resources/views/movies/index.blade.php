@@ -4,17 +4,16 @@
 
 @section('content')
     <section class="archive-card p-3 p-md-4">
-        @if (session('success'))
-            <div class="alert alert-success" role="status">{{ session('success') }}</div>
-        @endif
-
         <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-3">
             <div>
                 <div class="archive-eyebrow">Movie collection</div>
                 <h2 class="h3 mb-1">My Movie List</h2>
                 <p class="archive-subtitle small mb-0">Browse the collection or select a movie to view its details.</p>
             </div>
-            <a class="btn btn-primary btn-sm" href="{{ route('movies.create') }}">Add a movie</a>
+            @auth
+                 <a class="btn btn-primary btn-sm" href="{{ route('movies.create') }}">Add a movie</a>
+            @endauth
+
         </div>
 
         <form method="GET" action="{{ route('movies.index') }}" class="row g-2 align-items-end mb-3">
@@ -73,7 +72,9 @@
                         <th>Rating</th>
                         <th>Year</th>
                         <th>Now showing</th>
-                        <th>Actions</th>
+                        @auth
+                            <th>Actions</th>
+                        @endauth
                     </tr>
                 </thead>
                 <tbody>
@@ -96,22 +97,21 @@
                                     <span class="badge text-bg-secondary">No</span>
                                 @endif
                             </td>
-                            <td>
-                                <a href="{{ route('movies.edit', $movie['id']) }}" class="btn btn-sm btn-outline-primary">Edit</a>
-                            </td>
-
-                            <td>
-                                <form action="{{ route('movies.destroy', $movie['id']) }}" method="POST"
-                                onsubmit="return confirm('Delete this record?')">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn btn-danger btn-sm">Delete</button>
-                                </form>
-                            </td>
+                            @auth
+                                <td>
+                                    <a href="{{ route('movies.edit', $movie['id']) }}" class="btn btn-sm btn-outline-primary">Edit</a>
+                                    <form action="{{ route('movies.destroy', $movie['id']) }}" method="POST" class="d-inline"
+                                        onsubmit="return confirm('Delete this record?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                                    </form>
+                                </td>
+                            @endauth
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="text-center py-4">There are no movies to display right now.</td>
+                            <td colspan="{{ auth()->check() ? 7 : 6 }}" class="text-center py-4">There are no movies to display right now.</td>
                         </tr>
                     @endforelse
                 </tbody>

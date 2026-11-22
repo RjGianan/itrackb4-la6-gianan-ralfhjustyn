@@ -13,6 +13,20 @@
                     <a class="nav-link {{ request()->routeIs('movies.*') ? 'active' : '' }}" href="{{ route('movies.index') }}">Movies</a>
                 </li>
             </ul>
+            <div class="d-flex align-items-center gap-3 ms-auto">
+                @guest
+                    <a class="nav-link text-white" href="{{ route('login') }}">Log in</a>
+                    <a class="nav-link text-white" href="{{ route('register') }}">Register</a>
+                @endguest
+
+                @auth
+                    <span class="text-white">{{ Auth::user()->name }}</span>
+                    <form method="POST" action="{{ route('logout') }}" class="m-0">
+                        @csrf
+                        <button class="btn btn-outline-light btn-sm" type="submit">Log out</button>
+                    </form>
+                @endauth
+            </div>
         </div>
     </div>
 </nav>
