@@ -10,9 +10,13 @@
                 <h2 class="h3 mb-1">My Movie List</h2>
                 <p class="archive-subtitle small mb-0">Browse the collection or select a movie to view its details.</p>
             </div>
-            @auth
-                 <a class="btn btn-primary btn-sm" href="{{ route('movies.create') }}">Add a movie</a>
-            @endauth
+            @can('create', App\Models\Movie::class)
+                <a class="btn btn-primary btn-sm" href="{{ route('movies.create') }}">Add a movie</a>
+            @endcan
+
+            @cannot('create', App\Models\Movie::class)
+                <p class="text-muted small">You are viewing this list in read-only mode.</p>
+            @endcannot
 
         </div>
 
@@ -72,9 +76,9 @@
                         <th>Rating</th>
                         <th>Year</th>
                         <th>Now showing</th>
-                        @auth
+                        @can('create', App\Models\Movie::class)
                             <th>Actions</th>
-                        @endauth
+                        @endcan
                     </tr>
                 </thead>
                 <tbody>
@@ -97,17 +101,22 @@
                                     <span class="badge text-bg-secondary">No</span>
                                 @endif
                             </td>
-                            @auth
+                            @can('create', App\Models\Movie::class)
                                 <td>
-                                    <a href="{{ route('movies.edit', $movie['id']) }}" class="btn btn-sm btn-outline-primary">Edit</a>
-                                    <form action="{{ route('movies.destroy', $movie['id']) }}" method="POST" class="d-inline"
-                                        onsubmit="return confirm('Delete this record?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
-                                    </form>
+                                    @can('update', $movie)
+                                        <a href="{{ route('movies.edit', $movie) }}" class="btn btn-sm btn-outline-primary">Edit</a>
+                                    @endcan
+
+                                    @can('delete', $movie)
+                                        <form action="{{ route('movies.destroy', $movie) }}" method="POST" class="d-inline"
+                                            onsubmit="return confirm('Delete this record?')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                                        </form>
+                                    @endcan
                                 </td>
-                            @endauth
+                            @endcan
                         </tr>
                     @empty
                         <tr>

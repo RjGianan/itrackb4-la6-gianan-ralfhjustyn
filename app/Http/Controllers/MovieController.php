@@ -6,6 +6,7 @@ use App\Models\Genre;
 use App\Models\Movie;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Gate;
 
 class MovieController extends Controller
 {
@@ -54,6 +55,9 @@ class MovieController extends Controller
      */
     public function create()
     {
+
+        Gate::authorize('create', Movie::class);
+
         $genres = Genre::orderBy('name')->get();
 
         return view('movies.create', compact('genres'));
@@ -64,6 +68,9 @@ class MovieController extends Controller
      */
     public function store(Request $request)
     {
+
+        Gate::authorize('create', Movie::class);
+
         $validated = $request->validate([
             'title' => 'required|string|max:100',
             'genre_id' => 'required|integer|exists:genres,id',
@@ -95,6 +102,9 @@ class MovieController extends Controller
      */
     public function edit(Movie $movie)
     {
+
+    Gate::authorize('update', $movie);
+
     $genres = Genre::all();        // your lookup rows
     return view('movies.edit', compact('movie', 'genres'));
     
@@ -108,6 +118,9 @@ class MovieController extends Controller
      */
     public function update(Request $request, Movie $movie)
     {
+
+        Gate::authorize('update', $movie);
+
         $validated = $request->validate([
             'title' => 'required|string|max:100',
             'genre_id' => 'required|integer|exists:genres,id',
@@ -132,10 +145,13 @@ class MovieController extends Controller
      */
     public function destroy(Movie $movie)
     {
+
+        Gate::authorize('delete', $movie);
+
         abort_if($movie->genre->movies()->count() === 1, 403);
 
         $movie->delete();
 
-        return redirect()->route('movies.index');
+        return redirect()->route('movies.index')->with('success', 'Movie deleted successfully.');
     }
 }

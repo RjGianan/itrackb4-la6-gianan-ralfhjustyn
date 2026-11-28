@@ -49,7 +49,7 @@ Before `withQueryString()`, the page links contained the page number, such as `p
 
 A misspelled sort value can fail silently, so the page looks normal even though the results are not sorted the way I expected. My allowed list accepts only `title` or `year` and uses `title` when the value is invalid.
 
-## Authentication and authorisation are not the same. In one sentence each: what did this lesson give you, and what is still missing next meeting?
+## LESSON 14. Authentication and authorisation are not the same. In one sentence each: what did this lesson give you, and what is still missing next meeting?
 
 This lesson taught me that authentication verifies who a user is, while authorization determines what that user is allowed to do. I still need to learn how to define and enforce more detailed permissions, such as roles or policies.
 
@@ -72,4 +72,30 @@ Hiding Add, Edit, or Delete only changes the interface; server-side `auth` middl
 ## In screenshot 20 the route name was wrong. Why does auth middleware care that the route is named exactly `login`?
 
 Laravel's authentication middleware redirects unauthenticated users to the route named `login`; if that name is missing or different, the redirect can fail.
+
+## LESSON 15. Deciding Who May
+
+## Your project answered one question last week and a second one this week. Name both questions, say which one your policy answers, and point at the file that answers the other.
+
+Last week I answered, “Who is signed in?” with authentication, and this week I answered, “What can this signed-in user do?” with authorization. `app/Policies/MoviePolicy.php` answers the authorization question by checking the user's `role`, while `app/Http/Controllers/LoginController.php` handles signing in.
+
+## `role` is not in your User model's `$fillable`, and yet you set it and saved it in Tinker. Explain why both of those are true, and say what `$fillable` is actually guarding you against.
+
+In Tinker I assigned `$u->role = 'admin'` directly, which sets the `users.role` attribute rather than mass-assigning it, and `$u->save()` then stores it. `$fillable` on `User` controls mass-assignment methods such as `User::create()` and allows `name`, `email`, and `password`, helping prevent request data from setting fields like `role`.
+
+## A signed-in non-admin typing your create address gets a 403. A guest typing the same address gets your login page. Say which layer produced each response, and why the two are deliberately different.
+
+For `/movies/create`, the `auth` middleware in `routes/web.php` redirects a guest to the `login` route before the controller runs. A signed-in non-admin passes that middleware, but `Gate::authorize('create', Movie::class)` in `MovieController` asks `MoviePolicy`, which refuses the action and returns a 403.
+
+## Your list and detail pages are still open to everybody, and your policy says so. Explain why that is a decision and not something you forgot.
+
+I leave `movies.index` and `movies.show` public so anyone can browse movie titles, genres, ratings, years, and now-showing status without an account. The `viewAny` and `view` methods in `MoviePolicy` return true, while creating, updating, and deleting movies are restricted to admins.
+
+## The same rule is read by your controller and by your list page. What would go wrong if you had written that role check in both places by hand instead of in a policy?
+
+If I wrote the admin check separately in `MovieController` and `movies/index.blade.php`, I could update one and forget the other. Then the page might show a control that the controller rejects, or hide a control even though the controller allows the action; the policy keeps the rule in one place.
+
+## What does `SESSION_LIFETIME` count, what does it not count, and why was there no warning before you found yourself logged out?
+
+`SESSION_LIFETIME` counts how many minutes a session may remain idle; it does not count a fixed total time since login. Laravel notices the expired session when the next request arrives and redirects to login, so there is no warning before that request.
 
